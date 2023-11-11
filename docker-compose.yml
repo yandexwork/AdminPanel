@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+
+  postgres:
+    image: postgres:13
+    container_name: admin-postgres
+    volumes: 
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER={DB_USER}
+      - POSTGRES_PASSWORD={DB_PASSWORD}
+      - POSTGRES_DB={DB_NAME}
+    networks:
+      - admin_panel
+
+  django_gunicorn:
+    container_name: admin-django-gunicorn
+    volumes:
+      - YOUR_PATH_TO_PROJECT:/app
+    env_file:
+      - .env
+    build:
+      context: .
+    networks:
+      - admin_panel
+
+  nginx:
+    image: nginx:stable
+    container_name: admin-nginx
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - django_gunicorn
+    networks:
+      - admin_panel
+
+networks:
+  admin_panel:
+
+volumes:
+  db:
+
