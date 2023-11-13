@@ -2,6 +2,7 @@ import http
 import json
 
 import requests
+from requests.exceptions import ConnectionError
 from django.conf import settings
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
@@ -15,7 +16,10 @@ class CustomBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None):
         login_url = settings.AUTH_API_LOGIN_URL
         payload = {'login': username, 'password': password}
-        response = requests.post(login_url, data=json.dumps(payload))
+        try:
+            response = requests.post(login_url, data=json.dumps(payload))
+        except ConnectionError:
+            return None
         if response.status_code != http.HTTPStatus.OK:
             return None
 
